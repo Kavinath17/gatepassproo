@@ -13,28 +13,28 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 echo "Building Docker images..."
-                sh 'docker-compose build'
+                bat 'docker-compose build'
             }
         }
 
         stage('Run Containers') {
             steps {
                 echo "Running containers..."
-                sh 'docker-compose up -d'
+                bat 'docker-compose up -d'
             }
         }
 
         stage('Verify Containers') {
             steps {
                 echo "Checking running containers..."
-                sh 'docker ps'
+                bat 'docker ps'
             }
         }
 
         stage('Cleanup') {
             steps {
                 echo "Cleaning up old images..."
-                sh 'docker system prune -f'
+                bat 'docker system prune -f'
             }
         }
     }

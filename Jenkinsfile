@@ -4,8 +4,9 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo "Pulling latest code from repository..."
-                git 'https://github.com/Kavinath17/gatepassproo.git'
+                git branch: 'main',
+                    url: 'https://github.com/Kavinath17/gatepassproo.git',
+                    credentialsId: 'github_gatepasspro_credentials'
             }
         }
 

@@ -31,13 +31,17 @@ pipeline {
             }
         }
 
-        stage('Deploy on EC2') {
-            steps {
-                sshagent(['aws-ssh-key']) {
-                    bat """
-                    plink -i C:\\path\\to\\aws-ssh-key.ppk -batch ubuntu@16.171.10.176 ^
-                    "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
-                    """
+       stage('Deploy on EC2') {
+    steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'KEYFILE', usernameVariable: 'USER')]) {
+            sh """
+            ssh -o StrictHostKeyChecking=no -i $KEYFILE $USER@16.171.10.176 '
+            cd ~/gatepassproo &&
+            docker-compose pull &&
+            docker-compose down &&
+            docker-compose up -d
+            '
+            """
                 }
             }
         }

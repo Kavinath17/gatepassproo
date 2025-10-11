@@ -16,17 +16,17 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker-compose build'
+                bat 'docker-compose build'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-cred-id', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh '''
-                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    bat """
+                    echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
                     docker-compose push
-                    '''
+                    """
                 }
             }
         }
@@ -34,13 +34,10 @@ pipeline {
         stage('Deploy on EC2') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no $AWS_EC2_HOST "
-                    cd ~/gatepassproo &&
-                    docker-compose pull &&
-                    docker-compose down &&
-                    docker-compose up -d"
-                    '''
+                    bat """
+                    ssh -o StrictHostKeyChecking=no %AWS_EC2_HOST% ^
+                    "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
+                    """
                 }
             }
         }
@@ -48,7 +45,7 @@ pipeline {
         stage('Verify') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    sh 'ssh $AWS_EC2_HOST "docker ps"'
+                    bat 'ssh %AWS_EC2_HOST% "docker ps"'
                 }
             }
         }

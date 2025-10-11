@@ -20,7 +20,7 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 echo "Building Docker images..."
-                sh "docker-compose build"
+                bat "docker-compose build"
             }
         }
 
@@ -28,13 +28,13 @@ pipeline {
             steps {
                 script {
                     echo "Logging in to Docker Hub..."
-                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    bat "echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin"
 
                     echo "Pushing frontend image..."
-                    sh "docker-compose push frontend"
+                    bat "docker-compose push frontend"
 
                     echo "Pushing backend image..."
-                    sh "docker-compose push backend"
+                    bat "docker-compose push backend"
                 }
             }
         }
@@ -42,13 +42,12 @@ pipeline {
         stage('Deploy to AWS EC2') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $AWS_EC2_HOST '
-                        cd /home/ubuntu/gatepassproo
-                        docker-compose pull
-                        docker-compose down
-                        docker-compose up -d
-                    '
+                    bat """
+                    ssh -o StrictHostKeyChecking=no %AWS_EC2_HOST% ^
+                        "cd /home/ubuntu/gatepassproo && ^
+                        docker-compose pull && ^
+                        docker-compose down && ^
+                        docker-compose up -d"
                     """
                 }
             }
@@ -57,7 +56,7 @@ pipeline {
         stage('Verify Containers on EC2') {
             steps {
                 sshagent(['aws-ssh-key']) {
-                    sh "ssh $AWS_EC2_HOST 'docker ps'"
+                    bat "ssh %AWS_EC2_HOST% \"docker ps\""
                 }
             }
         }
@@ -65,7 +64,7 @@ pipeline {
         stage('Cleanup Jenkins Server') {
             steps {
                 echo "Cleaning up unused Docker images on Jenkins server..."
-                sh "docker system prune -f"
+                bat "docker system prune -f"
             }
         }
     }

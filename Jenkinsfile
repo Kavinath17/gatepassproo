@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sshagent(['aws-ssh-key']) {
                     bat """
-                    ssh -o StrictHostKeyChecking=no %AWS_EC2_HOST% ^
+                    plink -i C:\\path\\to\\aws-ssh-key.ppk -batch ubuntu@16.171.10.176 ^
                     "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
                     """
                 }

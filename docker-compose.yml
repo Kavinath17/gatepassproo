@@ -1,21 +1,22 @@
-services:
-  backend:
-    build: ./backend
-    container_name: gatepass-backend
-    ports:
-      - "5000:5000"
-    env_file:
-      - ./backend/.env
-    depends_on:
-      - db
+backend:
+  build: ./backend
+  image: kavinath/gatepass-backend:latest
+  container_name: gatepass-backend
+  ports:
+    - "5000:5000"
+  env_file:
+    - ./backend/.env
+  depends_on:
+    - db
 
-  frontend:
-    build: ./frontend
-    container_name: gatepass-frontend
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+frontend:
+  build: ./frontend
+  image: kavinath/gatepass-frontend:latest
+  container_name: gatepass-frontend
+  ports:
+    - "5173:5173"
+  depends_on:
+    - backend
 
   db:
     image: mysql:8

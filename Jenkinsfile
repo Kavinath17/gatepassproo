@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-id')  // Docker Hub credentials ID
+        SSH_KEY = credentials('aws-ssh-key')                       // Jenkins SSH key for EC2
+        AWS_EC2_HOST = "ubuntu@16.171.10.176"                     // Your EC2 public IP
+        DOCKERHUB_REPO = "kavinath"                                // Your Docker Hub username
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -13,28 +20,52 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 echo "Building Docker images..."
-                bat 'docker-compose build'
+                sh "docker-compose build"
             }
         }
 
-        stage('Run Containers') {
+        stage('Push Docker Images to Docker Hub') {
             steps {
-                echo "Running containers..."
-                bat 'docker-compose up -d'
+                script {
+                    echo "Logging in to Docker Hub..."
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+
+                    echo "Pushing frontend image..."
+                    sh "docker-compose push frontend"
+
+                    echo "Pushing backend image..."
+                    sh "docker-compose push backend"
+                }
             }
         }
 
-        stage('Verify Containers') {
+        stage('Deploy to AWS EC2') {
             steps {
-                echo "Checking running containers..."
-                bat 'docker ps'
+                sshagent(['aws-ssh-key']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no $AWS_EC2_HOST '
+                        cd /home/ubuntu/gatepassproo
+                        docker-compose pull
+                        docker-compose down
+                        docker-compose up -d
+                    '
+                    """
+                }
             }
         }
 
-        stage('Cleanup') {
+        stage('Verify Containers on EC2') {
             steps {
-                echo "Cleaning up old images..."
-                bat 'docker system prune -f'
+                sshagent(['aws-ssh-key']) {
+                    sh "ssh $AWS_EC2_HOST 'docker ps'"
+                }
+            }
+        }
+
+        stage('Cleanup Jenkins Server') {
+            steps {
+                echo "Cleaning up unused Docker images on Jenkins server..."
+                sh "docker system prune -f"
             }
         }
     }

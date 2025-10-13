@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Kavinath17/gatepassproo.git', credentialsId: 'github_gatepasspro_credentials'
+                git branch: 'main', url: 'https://github.com/Kavinath17/gatepassproo.git', credentialsId: 'github_gatepass_credentials'
             }
         }
 
@@ -30,16 +30,10 @@ pipeline {
         }
 
         stage('Deploy on EC2') {
-    steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
-            bat """
-            "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% ^
-                "cd ~/gatepassproo && sudo docker-compose pull && sudo docker-compose down && sudo docker-compose up -d"
-            """
-        }
-    }
-}
-
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                    bat """
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "cd ~/gatepassproo && sudo docker-compose pull && sudo docker-compose down && sudo docker-compose up -d"
                     """
                 }
             }

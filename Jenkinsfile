@@ -33,10 +33,10 @@ pipeline {
 
         stage('Deploy on EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'KEYFILE', usernameVariable: 'USER')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    ssh -o StrictHostKeyChecking=no -i %KEYFILE% %USER%@16.171.10.176 ^
-                    "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
+                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@16.171.10.176 \
+                        "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
                     """
                 }
             }

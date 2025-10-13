@@ -2,9 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-id')
-        SSH_KEY = credentials('aws-ssh-key')
-        AWS_EC2_HOST = "ubuntu@16.171.10.176"
-        DOCKERHUB_REPO = "kavinath"
+        AWS_EC2_HOST = "ubuntu@13.62.59.80"
     }
 
     stages {
@@ -35,7 +33,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" ubuntu@13.62.59.80 ^
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% ^
                         "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
                     """
                 }
@@ -44,8 +42,10 @@ pipeline {
 
         stage('Verify') {
             steps {
-                sshagent(['aws-ssh-key']) {
-                    bat 'ssh %AWS_EC2_HOST% "docker ps"'
+                withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                    bat """
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "docker ps"
+                    """
                 }
             }
         }

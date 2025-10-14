@@ -28,17 +28,25 @@ pipeline {
 
 
         stage('Build Docker Images') {
-            steps {
-                // Docker Compose v2
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose build'
-            }
-        }
+    steps {
+        bat """
+        set DOCKER_CONFIG=C:\\Temp\\docker-config
+        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose build
+        """
+    }
+}
+
 
         stage('Push to Docker Hub') {
-            steps {
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose push'
-            }
-        }
+    steps {
+        bat """
+        set DOCKER_CONFIG=C:\\Temp\\docker-config
+        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push kavinath/gatepass-backend:latest
+        "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" push kavinath/gatepass-frontend:latest
+        """
+    }
+}
+
 
         stage('Deploy on EC2') {
             steps {
@@ -61,4 +69,3 @@ pipeline {
         }
     }
 }
-

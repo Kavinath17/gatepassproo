@@ -6,4 +6,4 @@ COPY . .
 COPY wait-for-db.sh .
 RUN chmod +x wait-for-db.sh
 EXPOSE 5000
-CMD ["./wait-for-db.sh", "db", "npm", "start"]
+CMD ["npm", "start"]

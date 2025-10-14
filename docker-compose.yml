@@ -11,6 +11,7 @@ services:
       - ./backend/.env
     depends_on:
       - db
+    command: ["./wait-for-it.sh", "db:3306", "--", "npm", "start"] # optional
 
   frontend:
     build: ./frontend

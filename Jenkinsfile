@@ -17,7 +17,10 @@ pipeline {
         stage('Login to Docker Hub') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% -p %DOCKER_PASS%'
+            bat """
+            set DOCKER_CONFIG=C:\\Temp\\docker-config
+            echo %DOCKER_PASS% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USER% --password-stdin
+            """
         }
     }
 }
@@ -58,3 +61,4 @@ pipeline {
         }
     }
 }
+

@@ -17,7 +17,8 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                bat 'docker-compose build'
+                // Docker Compose v2
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose build'
             }
         }
 
@@ -27,8 +28,8 @@ pipeline {
                                                  passwordVariable: 'DOCKER_PASSWORD', 
                                                  usernameVariable: 'DOCKER_USERNAME')]) {
                     bat """
-                    echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
-                    docker-compose push
+                    echo %DOCKER_PASSWORD% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% --password-stdin
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose push
                     """
                 }
             }
@@ -39,7 +40,7 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
                     "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% ^
-                    "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
+                    "cd ~/gatepassproo && docker compose pull && docker compose down && docker compose up -d"
                     """
                 }
             }

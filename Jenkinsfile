@@ -16,16 +16,14 @@ pipeline {
 
         stage('Login to Docker Hub') {
     steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'dockerhub-cred-id',
-            usernameVariable: 'DOCKER_USERNAME',
-            passwordVariable: 'DOCKER_PASSWORD')]) {
-            bat """
-            echo %DOCKER_PASSWORD% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% --password-stdin
-            """
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-cred-id', 
+                                         usernameVariable: 'DOCKER_USERNAME', 
+                                         passwordVariable: 'DOCKER_PASSWORD')]) {
+            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD% --config C:\\Temp\\docker-config'
         }
     }
 }
+
 
 
         stage('Build Docker Images') {

@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-id')
         AWS_EC2_HOST = "ubuntu@13.62.59.80"
     }
 
@@ -15,23 +14,28 @@ pipeline {
             }
         }
 
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred-id', 
+                    usernameVariable: 'DOCKER_USERNAME', 
+                    passwordVariable: 'DOCKER_PASSWORD')]) {
+                    bat """
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
+                    """
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
-                // Docker Compose v2
                 bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose build'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred-id', 
-                                                 passwordVariable: 'DOCKER_PASSWORD', 
-                                                 usernameVariable: 'DOCKER_USERNAME')]) {
-                    bat """
-                    echo %DOCKER_PASSWORD% | "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% --password-stdin
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose push
-                    """
-                }
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose push'
             }
         }
 
@@ -39,8 +43,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% ^
-                    "cd ~/gatepassproo && docker compose pull && docker compose down && docker compose up -d"
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "cd ~/gatepassproo && docker compose pull && docker compose down && docker compose up -d"
                     """
                 }
             }
@@ -50,8 +53,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% ^
-                    "docker ps"
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "docker ps"
                     """
                 }
             }

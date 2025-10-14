@@ -21,7 +21,7 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME', 
                     passwordVariable: 'DOCKER_PASSWORD')]) {
                     bat """
-                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
+                    "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD% --password-stdin
                     """
                 }
             }
@@ -60,3 +60,4 @@ pipeline {
         }
     }
 }
+

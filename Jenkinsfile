@@ -52,7 +52,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'aws-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                     bat """
-                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "cd ~/gatepassproo && docker compose pull && docker compose down && docker compose up -d"
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -o StrictHostKeyChecking=no -i "%SSH_KEY%" %AWS_EC2_HOST% "cd ~/gatepassproo && docker-compose pull && docker-compose down && docker-compose up -d"
                     """
                 }
             }
@@ -69,3 +69,4 @@ pipeline {
         }
     }
 }
+
